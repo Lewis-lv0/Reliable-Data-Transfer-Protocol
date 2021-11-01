@@ -59,28 +59,23 @@ public class Sender extends NetworkHost
     // state information for the sender.
 
     int currentSeqNum; // current sequence number
-    int ack; // ack field
+    int ack; // ack field (default 1)
 
-    // an arrayList to store packet copies (retransmission)
-    HashMap<Integer, Packet> pktList;
+    HashMap<Integer, Packet> pktList;  // keep a copy for sent packets
     Queue<packetInChannelWithTime> packetInChannel; // key: seq number value: start time
-    Queue<Message> pq;
-    HashMap<Integer, Packet> nextPkt;
+    Queue<Message> pq; // sender buffer
+    HashMap<Integer, Packet> nextPkt; // acknowledged packets
 
-    // window base
-    int winSize;
-    int sendBase;
-    int inc;
+    int winSize; // window base
+    int sendBase; // send base
+    int inc; // default timer interval
 
     // timer variables
     double start; // start time of this packet
     double end; // end time of prev packet
 
-    // flag = 1 if channel is empty
-    // flag = 0 if channel is not empty
-    int flag;
-
     // Also add any necessary methods (e.g. for checksumming)
+
     private class packetInChannelWithTime {
         int seq;
         double start;
@@ -106,6 +101,7 @@ public class Sender extends NetworkHost
         return sum;
     }
 
+    // check sum from receiver 
     private int checkSumFromRcv(Packet pktFromRcv) {
         int sum = 0;
         byte[] bytes_arr = pktFromRcv.getPayload().getBytes();
@@ -119,7 +115,8 @@ public class Sender extends NetworkHost
         sum += (pktFromRcv.getAcknum() + pktFromRcv.getSeqnum());
         return sum;
     }
-
+    
+    // compute time interval 
     private double timeInteval(double startTime, double endTime) {
         return inc - endTime + startTime;
     }
@@ -136,7 +133,7 @@ public class Sender extends NetworkHost
     protected void Output(Message message) {
         Message msg;
         // buffer messages
-        if (sendBase + winSize <= currentSeqNum || flag == 0) {
+        if (sendBase + winSize <= currentSeqNum) {
             pq.add(message);
             if (packetInChannel.isEmpty()) {
                 msg = pq.poll();
@@ -148,7 +145,6 @@ public class Sender extends NetworkHost
         else {
             msg = message;
         }
-        flag = 0;
         // get field values
         String data = msg.getData();
         int checkSumVal = checkSum(msg);
@@ -173,8 +169,6 @@ public class Sender extends NetworkHost
         udtSend(pkt);
         // increment the seq number
         currentSeqNum++;
-
-        flag = 1;
     }
 
     // This routine will be called whenever a packet sent from the receiver
@@ -214,7 +208,7 @@ public class Sender extends NetworkHost
         } else {
             // do nothing
         }
-        if (!pq.isEmpty() && sendBase + winSize > currentSeqNum && flag == 1) {
+        if (!pq.isEmpty() && sendBase + winSize > currentSeqNum) {
             Output(pq.poll());
         }
     }
@@ -247,7 +241,7 @@ public class Sender extends NetworkHost
     // of the sender).
     protected void Init() {
         // initializations
-        winSize = 8;
+        winSize = 20;
         currentSeqNum = 0;
         ack = 1;
         sendBase = 0;
@@ -256,7 +250,6 @@ public class Sender extends NetworkHost
         packetInChannel = new LinkedList<>();
         nextPkt = new HashMap<>();
         inc = 40;
-        flag = 1;
     }
 
 }
