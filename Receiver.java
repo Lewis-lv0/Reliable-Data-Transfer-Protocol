@@ -2,12 +2,8 @@
  * Filename:  Receiver.java
  *************************************/
 import java.util.Random;
-
 import java.util.HashMap;
-
-
 public class Receiver extends NetworkHost
-
 {
     /*
      * Predefined Constants (static member variables):
@@ -84,18 +80,15 @@ public class Receiver extends NetworkHost
      *          returns the Packet's payload
      *
      */
-
     // Add any necessary class variables here. They can hold
     // state information for the receiver.
     int rcvBase;
-    int sequenceNumSize;
     HashMap<Integer, Packet> pktBuf; // SeqNum:Packet
 
     // Also add any necessary methods (e.g. for checksumming)
     private int checkSum(Packet pkt) {
         int sum = 0;
         byte[] bytes_arr = pkt.getPayload().getBytes();
-
         for (byte bt : bytes_arr) {
             // assume each character is a 8-bit integer
             int num = bt & 0xff;
@@ -116,7 +109,6 @@ public class Receiver extends NetworkHost
     {
         super(entityName, events, pLoss, pCorrupt, trace, random);
     }
-
     
     // This routine will be called whenever a packet sent from the sender
     // (i.e. as a result of a udtSend() being done by a Sender procedure)
@@ -129,18 +121,19 @@ public class Receiver extends NetworkHost
         // correctly received packet
         if (seqNum == rcvBase && packet.getChecksum() == checkSum(packet)) {
             deliverData(dataSent);
-            Packet pkt = new Packet(seqNum, 1, seqNum + 1);
-            udtSend(pkt);
             rcvBase++;
             while (!pktBuf.isEmpty() && pktBuf.containsKey(rcvBase)) {
                 deliverData(pktBuf.get(rcvBase).getPayload());
                 rcvBase++;
             }
+            Packet pkt = new Packet(seqNum, rcvBase, seqNum + rcvBase);
+            udtSend(pkt);
         }
         // detect dulplicate or buffer coming packets
         else if (packet.getChecksum() == checkSum(packet)) {
             // ignore the packet and send ack
-            Packet pkt = new Packet(seqNum, 1, seqNum + 1);
+            // ack of this packet is the rcv base
+            Packet pkt = new Packet(seqNum, rcvBase, seqNum + rcvBase);
             udtSend(pkt);
             if (seqNum > rcvBase) {
                 // buffer the packet
@@ -148,11 +141,10 @@ public class Receiver extends NetworkHost
             }
         }
         else {
-            // ignore
+
         }
     }
     
-
     
     // This routine will be called once, before any of your other receiver-side
     // routines are called. It can be used to do any required
@@ -161,8 +153,6 @@ public class Receiver extends NetworkHost
     protected void Init()
     {
         rcvBase = 0;
-        sequenceNumSize = 16;
         pktBuf = new HashMap<>();
     }
-
 }

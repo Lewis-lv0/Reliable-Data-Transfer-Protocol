@@ -1,4 +1,3 @@
-
 /*************************************
  * Filename:  Sender.java
  *************************************/
@@ -12,48 +11,81 @@ public class Sender extends NetworkHost
 
 {
     /*
-     * Predefined Constant (static member variables):
-     *
-     * int MAXDATASIZE : the maximum size of the Message data and Packet payload
-     *
-     *
-     * Predefined Member Methods: (these methods belong to NetworkHost, so...) void
-     * startTimer(double increment): Starts a timer, which will expire in
-     * "increment" time units, causing the interrupt handler to be called. You
-     * should only call this in the Sender class. void stopTimer(): Stops the timer.
-     * You should only call this in the Sender class. void udtSend(Packet p) Puts
-     * the packet "p" into the network to arrive at other host void
-     * deliverData(String dataSent) Passes "dataSent" up to app layer. You should
-     * only call this in the Receiver class. double getTime() Returns the current
-     * time in the simulator. Might be useful for debugging. void printEventList()
-     * Prints the current event list to stdout. Might be useful for debugging, but
-     * probably not.
-     *
-     *
-     * Predefined Classes:
-     *
-     * Message: Used to encapsulate a message coming from app layer Constructor:
-     * Message(String inputData): creates a new Message containing "inputData"
-     * Methods: boolean setData(String inputData): sets an existing Message's data
-     * to "inputData" returns true on success, false otherwise String getData():
-     * returns the data contained in the message Packet: Used to encapsulate a
-     * packet Constructors: Packet (Packet p): creates a new Packet, which is a copy
-     * of "p" Packet (int seq, int ack, int check, String newPayload) creates a new
-     * Packet with a sequence field of "seq", an ack field of "ack", a checksum
-     * field of "check", and a payload of "newPayload" Packet (int seq, int ack, int
-     * check) chreate a new Packet with a sequence field of "seq", an ack field of
-     * "ack", a checksum field of "check", and an empty payload Methods: boolean
-     * setSeqnum(int n) sets the Packet's sequence field to "n" returns true on
-     * success, false otherwise boolean setAcknum(int n) sets the Packet's ack field
-     * to "n" returns true on success, false otherwise boolean setChecksum(int n)
-     * sets the Packet's checksum to "n" returns true on success, false otherwise
-     * boolean setPayload(String newPayload) sets the Packet's payload to
-     * "newPayload" returns true on success, false otherwise int getSeqnum() returns
-     * the contents of the Packet's sequence field int getAcknum() returns the
-     * contents of the Packet's ack field int getChecksum() returns the checksum of
-     * the Packet String getPayload() returns the Packet's payload
-     *
-     */
+    * Predefined Constant (static member variables):
+    *
+    *   int MAXDATASIZE : the maximum size of the Message data and
+    *                     Packet payload
+    *
+    *
+    * Predefined Member Methods:
+    * (these methods belong to NetworkHost, so...)
+    *  void startTimer(double increment):
+    *       Starts a timer, which will expire in
+    *       "increment" time units, causing the interrupt handler to be
+    *       called.  You should only call this in the Sender class.
+    *  void stopTimer():
+    *       Stops the timer. You should only call this in the Sender class.
+    *  void udtSend(Packet p)
+    *       Puts the packet "p" into the network to arrive at other host
+    *  void deliverData(String dataSent)
+    *       Passes "dataSent" up to app layer. You should only call this in the 
+    *       Receiver class.
+    *  double getTime()
+    *       Returns the current time in the simulator.  Might be useful for
+    *       debugging.
+    *  void printEventList()
+    *       Prints the current event list to stdout.  Might be useful for
+    *       debugging, but probably not.
+    *
+    *
+    *  Predefined Classes:
+    *
+    *  Message: Used to encapsulate a message coming from app layer
+    *    Constructor:
+    *      Message(String inputData): 
+    *          creates a new Message containing "inputData"
+    *    Methods:
+    *      boolean setData(String inputData):
+    *          sets an existing Message's data to "inputData"
+    *          returns true on success, false otherwise
+    *      String getData():
+    *          returns the data contained in the message
+    *  Packet: Used to encapsulate a packet
+    *    Constructors:
+    *      Packet (Packet p):
+    *          creates a new Packet, which is a copy of "p"
+    *      Packet (int seq, int ack, int check, String newPayload)
+    *          creates a new Packet with a sequence field of "seq", an
+    *          ack field of "ack", a checksum field of "check", and a
+    *          payload of "newPayload"
+    *      Packet (int seq, int ack, int check)
+    *          chreate a new Packet with a sequence field of "seq", an
+    *          ack field of "ack", a checksum field of "check", and
+    *          an empty payload
+    *    Methods:
+    *      boolean setSeqnum(int n)
+    *          sets the Packet's sequence field to "n"
+    *          returns true on success, false otherwise
+    *      boolean setAcknum(int n)
+    *          sets the Packet's ack field to "n"
+    *          returns true on success, false otherwise
+    *      boolean setChecksum(int n)
+    *          sets the Packet's checksum to "n"
+    *          returns true on success, false otherwise
+    *      boolean setPayload(String newPayload)
+    *          sets the Packet's payload to "newPayload"
+    *          returns true on success, false otherwise
+    *      int getSeqnum()
+    *          returns the contents of the Packet's sequence field
+    *      int getAcknum()
+    *          returns the contents of the Packet's ack field
+    *      int getChecksum()
+    *          returns the checksum of the Packet
+    *      String getPayload()
+    *          returns the Packet's payload
+    *
+    */
+
 
     // Add any necessary class variables here. They can hold
     // state information for the sender.
@@ -62,7 +94,7 @@ public class Sender extends NetworkHost
     int ack; // ack field (default 1)
 
     HashMap<Integer, Packet> pktList;  // keep a copy for sent packets
-    Queue<packetInChannelWithTime> packetInChannel; // key: seq number value: start time
+    HashMap<Integer, packetInChannelWithTime> packetInChannel; // key: seq number value: start time
     Queue<Message> pq; // sender buffer
     HashMap<Integer, Packet> nextPkt; // acknowledged packets
 
@@ -115,16 +147,17 @@ public class Sender extends NetworkHost
         sum += (pktFromRcv.getAcknum() + pktFromRcv.getSeqnum());
         return sum;
     }
-    
-    // compute time interval 
+
     private double timeInteval(double startTime, double endTime) {
         return inc - endTime + startTime;
     }
+
 
     // This is the constructor. Don't touch!!!
     public Sender(int entityName, EventList events, double pLoss, double pCorrupt, int trace, Random random) {
         super(entityName, events, pLoss, pCorrupt, trace, random);
     }
+
 
     // This routine will be called whenever the app layer at the sender
     // has a message to send. The job of your protocol is to insure that
@@ -135,16 +168,13 @@ public class Sender extends NetworkHost
         // buffer messages
         if (sendBase + winSize <= currentSeqNum) {
             pq.add(message);
-            if (packetInChannel.isEmpty()) {
-                msg = pq.poll();
-            } else {
-                return;
-            }
+            return;
         }
 
         else {
             msg = message;
         }
+
         // get field values
         String data = msg.getData();
         int checkSumVal = checkSum(msg);
@@ -156,9 +186,10 @@ public class Sender extends NetworkHost
 
         start = getTime();
 
-        int inChannelSeq = currentSeqNum;
-        packetInChannelWithTime obj = new packetInChannelWithTime(inChannelSeq, start);
-        packetInChannel.offer(obj);
+        packetInChannelWithTime obj = new packetInChannelWithTime(currentSeqNum, start);
+        packetInChannel.put(currentSeqNum, obj);
+
+
         if (packetInChannel.size() == 1) {
             startTimer(inc);
         } else {
@@ -169,7 +200,13 @@ public class Sender extends NetworkHost
         udtSend(pkt);
         // increment the seq number
         currentSeqNum++;
+
+        while (!pq.isEmpty() && currentSeqNum<winSize+sendBase) {
+            Output(pq.poll());
+        }
     }
+
+
 
     // This routine will be called whenever a packet sent from the receiver
     // (i.e. as a result of a udtSend() being done by a receiver procedure)
@@ -177,62 +214,73 @@ public class Sender extends NetworkHost
     // sent from the receiver.
     protected void Input(Packet packet) {
         int seq = packet.getSeqnum();
-        if (seq == sendBase && checkSumFromRcv(packet) == packet.getChecksum()) {
-            // move the window forward
-            stopTimer();
-            while (!packetInChannel.isEmpty() && packetInChannel.peek().seq == seq) {
-                packetInChannel.poll();
-            }
-            sendBase++;
-            // next packet has arrived
-            // delete it from channel
-            while (!nextPkt.isEmpty() && nextPkt.containsKey(sendBase)
-                    && nextPkt.containsKey(packetInChannel.peek().seq)) {
+        int rcvBase = packet.getAcknum();
+        if (packet.getChecksum() == checkSumFromRcv(packet)) {
+            // case 1
+            if (seq == sendBase) {
+                stopTimer();
+                end = getTime();
                 sendBase++;
-                nextPkt.remove(packetInChannel.poll().seq);
+                start = packetInChannel.get(seq).start;
+                packetInChannel.remove(seq);
+
+                while (nextPkt.containsKey(sendBase)) {
+                    packetInChannel.remove(sendBase);
+                    sendBase++;
+                }
+
+                if (packetInChannel.containsKey(sendBase)) {
+                    startTimer(timeInteval(start, end));
+                    System.out.println("start timer for "+ sendBase);
+                }
+                else {
+                }
             }
-            end = getTime(); // current time (when prev packet ends)
-            while (!packetInChannel.isEmpty() && packetInChannel.peek().seq < sendBase)
-                packetInChannel.poll();
-            if (!packetInChannel.isEmpty()) {
-                start = packetInChannel.peek().start;
-                startTimer(timeInteval(start, end));
+            // case 2
+            else if (seq > sendBase) {
+                // reveive following packets
+                nextPkt.put(seq, packet);
+                
+                if (seq  >= sendBase + winSize) {
+                    udtSend(pktList.get(rcvBase));
+                    startTimer(inc);
+                }
+                else {
+                    // continue;
+                }
+
             }
+            // case 3
+            else if (seq < sendBase){
+                // ignore
+            }
+            else {
+                // this case should not happen
+            }
+
+        }
+        else {
+            // ignore corrupted packet from RCV
         }
 
-        else if (seq == sendBase) {
-            // wait for timer interrupt
-        } else if (seq > sendBase && checkSumFromRcv(packet) == packet.getChecksum()) {
-            // buffer acks of next packets
-            nextPkt.put(seq, packet);
-        } else {
-            // do nothing
-        }
-        if (!pq.isEmpty() && sendBase + winSize > currentSeqNum) {
+        while (!pq.isEmpty() && sendBase + winSize > currentSeqNum) {
             Output(pq.poll());
         }
     }
+
 
     // This routine will be called when the senders's timer expires (thus
     // generating a timer interrupt). You'll probably want to use this routine
     // to control the retransmission of packets. See startTimer() and
     // stopTimer(), above, for how the timer is started and stopped.
     protected void TimerInterrupt() {
+
         // we don't need to stop the timer since it already time out
-        if (pktList.get(sendBase) != null) {
-            udtSend(pktList.get(sendBase));
-            startTimer(inc);
-            start = getTime();
-            packetInChannelWithTime obj = new packetInChannelWithTime(sendBase, start);
-            packetInChannel.offer(obj);
-            // if (packetInChannel.size() == 1) {
-            // startTimer(inc);
-            // } else {
-            // // wait in the queue
-            // }
-        } else {
-            System.out.println("****************************\nwtf\n***************************");
-        }
+        udtSend(pktList.get(sendBase));
+        startTimer(inc);
+        start = getTime();
+        packetInChannelWithTime obj = new packetInChannelWithTime(sendBase, start);
+        packetInChannel.put(sendBase, obj);
     }
 
     // This routine will be called once, before any of your other sender-side
@@ -247,7 +295,7 @@ public class Sender extends NetworkHost
         sendBase = 0;
         pktList = new HashMap<>();
         pq = new LinkedList<>();
-        packetInChannel = new LinkedList<>();
+        packetInChannel = new HashMap<>();
         nextPkt = new HashMap<>();
         inc = 40;
     }
