@@ -94,7 +94,7 @@ public class Sender extends NetworkHost
     int ack; // ack field (default 1)
 
     HashMap<Integer, Packet> pktList;  // keep a copy for sent packets
-    HashMap<Integer, packetInChannelWithTime> packetInChannel; // key: seq number value: start time
+    HashMap<Integer, Double> packetInChannel; // key: seq number value: start time
     Queue<Message> pq; // sender buffer
     HashMap<Integer, Packet> nextPkt; // acknowledged packets
 
@@ -107,16 +107,6 @@ public class Sender extends NetworkHost
     double end; // end time of prev packet
 
     // Also add any necessary methods (e.g. for checksumming)
-
-    private class packetInChannelWithTime {
-        int seq;
-        double start;
-
-        public packetInChannelWithTime(int seqNum, double t) {
-            seq = seqNum;
-            start = t;
-        }
-    }
 
     // check sum of a packet
     private int checkSum(Message msg) {
@@ -185,9 +175,7 @@ public class Sender extends NetworkHost
         pktList.put(currentSeqNum, pkt_copy);
 
         start = getTime();
-
-        packetInChannelWithTime obj = new packetInChannelWithTime(currentSeqNum, start);
-        packetInChannel.put(currentSeqNum, obj);
+        packetInChannel.put(currentSeqNum, start);
 
 
         if (packetInChannel.size() == 1) {
@@ -221,7 +209,7 @@ public class Sender extends NetworkHost
                 stopTimer();
                 end = getTime();
                 sendBase++;
-                start = packetInChannel.get(seq).start;
+                start = packetInChannel.get(seq);
                 packetInChannel.remove(seq);
 
                 while (nextPkt.containsKey(sendBase)) {
@@ -279,8 +267,7 @@ public class Sender extends NetworkHost
         udtSend(pktList.get(sendBase));
         startTimer(inc);
         start = getTime();
-        packetInChannelWithTime obj = new packetInChannelWithTime(sendBase, start);
-        packetInChannel.put(sendBase, obj);
+        packetInChannel.put(sendBase, start);
     }
 
     // This routine will be called once, before any of your other sender-side
