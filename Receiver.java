@@ -83,6 +83,7 @@ public class Receiver extends NetworkHost
     // Add any necessary class variables here. They can hold
     // state information for the receiver.
     int rcvBase;
+    int NAK;
     HashMap<Integer, Packet> pktBuf; // SeqNum:Packet
 
     // Also add any necessary methods (e.g. for checksumming)
@@ -140,8 +141,9 @@ public class Receiver extends NetworkHost
                 pktBuf.put(seqNum, packet);
             }
         }
+        // fail the checksum
         else {
-
+            // ignore
         }
     }
     
@@ -153,6 +155,7 @@ public class Receiver extends NetworkHost
     protected void Init()
     {
         rcvBase = 0;
+        NAK = -1;
         pktBuf = new HashMap<>();
     }
 }
