@@ -8,7 +8,6 @@ import java.util.Queue;
 import java.util.Random;
 
 public class Sender extends NetworkHost
-
 {
     /*
     * Predefined Constant (static member variables):
@@ -219,7 +218,6 @@ public class Sender extends NetworkHost
 
                 if (packetInChannel.containsKey(sendBase)) {
                     startTimer(timeInteval(start, end));
-                    System.out.println("start timer for "+ sendBase);
                 }
                 else {
                 }
@@ -228,10 +226,11 @@ public class Sender extends NetworkHost
             else if (seq > sendBase) {
                 // reveive following packets
                 nextPkt.put(seq, packet);
-                
-                if (seq  >= sendBase + winSize) {
+
+                if (seq >= sendBase+winSize-1 && seq>rcvBase) {
                     udtSend(pktList.get(rcvBase));
-                    startTimer(inc);
+                    start = getTime();
+                    packetInChannel.put(rcvBase, start);
                 }
                 else {
                     // continue;
@@ -276,7 +275,7 @@ public class Sender extends NetworkHost
     // of the sender).
     protected void Init() {
         // initializations
-        winSize = 20;
+        winSize = 8;
         currentSeqNum = 0;
         ack = 1;
         sendBase = 0;
@@ -286,5 +285,4 @@ public class Sender extends NetworkHost
         nextPkt = new HashMap<>();
         inc = 40;
     }
-
 }
